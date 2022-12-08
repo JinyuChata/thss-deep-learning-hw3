@@ -13,8 +13,8 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 from gan_pytorch import preprocess_img, deprocess_img, rel_error, count_params, ChunkSampler
 from gan_pytorch import Flatten, Unflatten, initialize_weights
-from gan_pytorch import discriminator
-from gan_pytorch import generator
+from gan_pytorch import discriminator, build_dc_classifier
+from gan_pytorch import generator, build_dc_generator
 from gan_pytorch import bce_loss, discriminator_loss, generator_loss
 from gan_pytorch import ls_discriminator_loss, ls_generator_loss
 from gan_pytorch import get_optimizer, run_a_gan
@@ -116,29 +116,44 @@ test_generator_loss(
     answers['logits_fake'],
     answers['g_loss_true']
 )
+#
+# # Make the discriminator
+# # D = discriminator().type(dtype)
+# D = build_dc_classifier().type(dtype)
+#
+# # Make the generator
+# # G = generator().type(dtype)
+# G = build_dc_generator().type(dtype)
+#
+# # Use the function you wrote earlier to get optimizers for the Discriminator and the Generator
+# D_solver = get_optimizer(D)
+# G_solver = get_optimizer(G)
+#
+# # Run it!
+#
+# images = run_a_gan(
+#     D,
+#     G,
+#     D_solver,
+#     G_solver,
+#     ls_discriminator_loss,
+#     ls_generator_loss,
+#     loader_train,
+#     num_epochs=20
+# )
+#
+# for i in range(len(images)):
+#     show_images(images[i], i)
 
-# Make the discriminator
-D = discriminator().type(dtype)
+D = build_dc_classifier().to("cpu")
+D.apply(initialize_weights)
 
-# Make the generator
-G = generator().type(dtype)
+G = build_dc_generator().to("cpu")
+G.apply(initialize_weights)
 
-# Use the function you wrote earlier to get optimizers for the Discriminator and the Generator
 D_solver = get_optimizer(D)
 G_solver = get_optimizer(G)
 
-# Run it!
+run_a_gan(D, G, D_solver, G_solver, discriminator_loss, generator_loss,
+          loader_train, num_epochs=20)
 
-images = run_a_gan(
-    D,
-    G,
-    D_solver,
-    G_solver,
-    ls_discriminator_loss,
-    ls_generator_loss,
-    loader_train,
-    num_epochs=20
-)
-
-for i in range(len(images)):
-    show_images(images[i], i)

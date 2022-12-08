@@ -184,17 +184,27 @@ def ls_generator_loss(scores_fake):
 
     return fake_loss
 
-def build_dc_classifier(batch_size):
+def build_dc_classifier(batch_size=1):
     """
     Build and return a PyTorch model for the DCGAN discriminator implementing
     the architecture above.
     """
     ##############################################################################
-    # TODO: Implement architecture                                               #
-    #                                                                            #
+    # Implement architecture                                               #
     # HINT: nn.Sequential might be helpful.                                      #
     ##############################################################################
-    pass
+    return nn.Sequential(
+        nn.Conv2d(1, 32, 5, 1),
+        nn.LeakyReLU(0.01),
+        nn.MaxPool2d(2, 2),
+        nn.Conv2d(32, 64, 5, 1),
+        nn.LeakyReLU(0.01),
+        nn.MaxPool2d(2, 2),
+        nn.Flatten(),
+        nn.Linear(64*4*4, 64*4*4),
+        nn.LeakyReLU(0.01),
+        nn.Linear(64*4*4, 1)
+    )
 
 
 def build_dc_generator(noise_dim=NOISE_DIM):
@@ -208,9 +218,20 @@ def build_dc_generator(noise_dim=NOISE_DIM):
     #                                                                            #
     # HINT: nn.Sequential might be helpful.                                      #
     ##############################################################################
-
-    pass
-
+    return nn.Sequential(
+        nn.Linear(noise_dim, 1024),
+        nn.ReLU(),
+        nn.BatchNorm1d(1024),
+        nn.Linear(1024, 7*7*128),
+        nn.ReLU(),
+        nn.BatchNorm1d(7*7*128),
+        nn.Unflatten(1, (128, 7, 7)),
+        nn.ConvTranspose2d(128, 64, 4, 2, 1),
+        nn.ReLU(), nn.BatchNorm2d(64),
+        nn.ConvTranspose2d(64, 1, 4, 2, 1),
+        nn.Tanh(),
+        nn.Flatten()
+    )
 
 
 def run_a_gan(D, G, D_solver, G_solver, discriminator_loss, generator_loss, loader_train, show_every=250,
@@ -255,7 +276,7 @@ def run_a_gan(D, G, D_solver, G_solver, discriminator_loss, generator_loss, load
             g_error = generator_loss(gen_logits_fake)
             g_error.backward()
             G_solver.step()
-
+            print(".", end="")
             if (iter_count % show_every == 0):
                 print('Iter: {}, D: {:.4}, G:{:.4}'.format(iter_count,d_total_error.item(),g_error.item()))
                 imgs_numpy = fake_images.data.cpu().numpy()
