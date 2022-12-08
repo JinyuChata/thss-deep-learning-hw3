@@ -7,6 +7,8 @@ import torchvision.transforms as T
 import torch.optim as optim
 from torch.utils.data import sampler
 
+from torch.nn import functional as F
+
 import PIL
 
 NOISE_DIM = 96
@@ -27,12 +29,10 @@ def sample_noise(batch_size, dim, seed=None):
     """
     if seed is not None:
         torch.manual_seed(seed)
-    ##############################################################################
-    # TODO: generate noise                                                       #
-    #                                                                            #
-    ##############################################################################
-    pass
-
+    ########################################################################
+    # generate noise                                                       #
+    ########################################################################
+    return -2 * torch.rand((batch_size, dim), dtype=dtype) + 1
 def discriminator(seed=None):
     """
     Build and return a PyTorch model implementing the architecture above.
@@ -44,14 +44,19 @@ def discriminator(seed=None):
     model = None
 
     ##############################################################################
-    # TODO: Implement architecture                                               #
+    # Implement architecture                                               #
     #                                                                            #
     # HINT: nn.Sequential might be helpful. You'll start by calling Flatten().   #
     ##############################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
-
-    pass
-
+    model = nn.Sequential(
+        nn.Flatten(),
+        nn.Linear(784, 256),
+        nn.LeakyReLU(0.01),
+        nn.Linear(256, 256),
+        nn.LeakyReLU(0.01),
+        nn.Linear(256, 1)     # Real/Fake
+    )
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
     ##############################################################################
     #                               END OF YOUR CODE                             #
@@ -69,12 +74,18 @@ def generator(noise_dim=NOISE_DIM, seed=None):
     model = None
 
     ##############################################################################
-    # TODO: Implement architecture                                               #
+    # Implement architecture                                               #
     #                                                                            #
     # HINT: nn.Sequential might be helpful.                                      #
     ##############################################################################
-    
-    pass
+    model = nn.Sequential(
+        nn.Linear(noise_dim, 1024),
+        nn.ReLU(),
+        nn.Linear(1024, 1024),
+        nn.ReLU(),
+        nn.Linear(1024, 784),
+        nn.Tanh()
+    )
     return model
 
 def bce_loss(input, target):
@@ -103,11 +114,9 @@ def discriminator_loss(logits_real, logits_fake):
     - loss: PyTorch Tensor containing (scalar) the loss for the discriminator.
     """
     loss = None
-    ##############################################################################
-    # TODO:                                                                      #
-    #                                                                            #
-    ##############################################################################
-    return loss
+    real_loss = F.binary_cross_entropy_with_logits(logits_real, torch.ones_like(logits_real, dtype=dtype))
+    fake_loss = F.binary_cross_entropy_with_logits(logits_fake, torch.zeros_like(logits_fake, dtype=dtype))
+    return real_loss + fake_loss
 
 def generator_loss(logits_fake):
     """
@@ -119,11 +128,7 @@ def generator_loss(logits_fake):
     Returns:
     - loss: PyTorch Tensor containing the (scalar) loss for the generator.
     """
-    loss = None
-    ##############################################################################
-    # TODO:                                                                      #
-    #                                                                            #
-    ##############################################################################
+    loss = F.binary_cross_entropy_with_logits(logits_fake, torch.ones_like(logits_fake, dtype=dtype))
     return loss
 
 def get_optimizer(model):
@@ -140,7 +145,7 @@ def get_optimizer(model):
     optimizer = None
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-    pass
+    optimizer = optim.Adam(model.parameters(), lr=1e-3, betas=(0.5, 0.999))
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
     return optimizer

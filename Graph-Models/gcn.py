@@ -11,6 +11,7 @@ dataset = 'Cora'
 path = osp.join(osp.dirname(osp.realpath(__file__)), 'data', dataset)
 dataset = Planetoid(path, dataset, transform=T.NormalizeFeatures())
 data = dataset[0]
+print(data)
 
 
 class GCN(torch.nn.Module):
