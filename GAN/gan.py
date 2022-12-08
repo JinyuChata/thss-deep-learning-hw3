@@ -81,41 +81,6 @@ loader_val = DataLoader(
 imgs = loader_train.__iter__().__next__()[0].view(batch_size, 784).numpy().squeeze()
 
 
-def test_sample_noise():
-    batch_size = 3
-    dim = 4
-    torch.manual_seed(231)
-    z = sample_noise(batch_size, dim)
-    np_z = z.cpu().numpy()
-    assert np_z.shape == (batch_size, dim)
-    assert torch.is_tensor(z)
-    assert np.all(np_z >= -1.0) and np.all(np_z <= 1.0)
-    assert np.any(np_z < 0.0) and np.any(np_z > 0.0)
-    print('All tests passed!')
-
-
-def test_discriminator_loss(logits_real, logits_fake, d_loss_true):
-    d_loss = discriminator_loss(torch.Tensor(logits_real).type(dtype),
-                                torch.Tensor(logits_fake).type(dtype)).cpu().numpy()
-    print("Maximum error in d_loss: %g" % rel_error(d_loss_true, d_loss))
-
-
-test_discriminator_loss(
-    answers['logits_real'],
-    answers['logits_fake'],
-    answers['d_loss_true']
-)
-
-
-def test_generator_loss(logits_fake, g_loss_true):
-    g_loss = generator_loss(torch.Tensor(logits_fake).type(dtype)).cpu().numpy()
-    print("Maximum error in g_loss: %g" % rel_error(g_loss_true, g_loss))
-
-
-test_generator_loss(
-    answers['logits_fake'],
-    answers['g_loss_true']
-)
 #
 # # Make the discriminator
 # # D = discriminator().type(dtype)
@@ -145,10 +110,12 @@ test_generator_loss(
 # for i in range(len(images)):
 #     show_images(images[i], i)
 
-D = build_dc_classifier().to("cpu")
+devices  = [torch.cuda.device(i) for i in range(torch.cuda.device_count())]
+
+D = build_dc_classifier().to("cuda")
 D.apply(initialize_weights)
 
-G = build_dc_generator().to("cpu")
+G = build_dc_generator().to("cuda")
 G.apply(initialize_weights)
 
 D_solver = get_optimizer(D)

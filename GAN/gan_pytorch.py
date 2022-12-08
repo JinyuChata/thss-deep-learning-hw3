@@ -14,7 +14,7 @@ import PIL
 NOISE_DIM = 96
 
 dtype = torch.cuda.FloatTensor if torch.cuda.is_available() else torch.FloatTensor
-device = "cuda0" if torch.cuda.is_available() else "cpu"
+device = "cuda" if torch.cuda.is_available() else "cpu"
 def sample_noise(batch_size, dim, seed=None):
     """
     Generate a PyTorch Tensor of uniform random noise.
@@ -276,7 +276,7 @@ def run_a_gan(D, G, D_solver, G_solver, discriminator_loss, generator_loss, load
             g_error = generator_loss(gen_logits_fake)
             g_error.backward()
             G_solver.step()
-            print(".", end="")
+            # print(".", end="")
             if (iter_count % show_every == 0):
                 print('Iter: {}, D: {:.4}, G:{:.4}'.format(iter_count,d_total_error.item(),g_error.item()))
                 imgs_numpy = fake_images.data.cpu().numpy()
