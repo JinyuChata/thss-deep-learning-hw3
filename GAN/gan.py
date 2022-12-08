@@ -82,45 +82,75 @@ loader_val = DataLoader(
 imgs = loader_train.__iter__().__next__()[0].view(batch_size, 784).numpy().squeeze()
 
 
-#
-# # Make the discriminator
-# # D = discriminator().type(dtype)
-# D = build_dc_classifier().type(dtype)
-#
-# # Make the generator
-# # G = generator().type(dtype)
-# G = build_dc_generator().type(dtype)
-#
-# # Use the function you wrote earlier to get optimizers for the Discriminator and the Generator
-# D_solver = get_optimizer(D)
-# G_solver = get_optimizer(G)
-#
-# # Run it!
-#
-# images = run_a_gan(
-#     D,
-#     G,
-#     D_solver,
-#     G_solver,
-#     ls_discriminator_loss,
-#     ls_generator_loss,
-#     loader_train,
-#     num_epochs=20
-# )
-#
-# for i in range(len(images)):
-#     show_images(images[i], i)
+def go_gan():
+    # Make the discriminator
+    D = discriminator().type(dtype)
+
+    # Make the generator
+    G = generator().type(dtype)
+
+    # Use the function you wrote earlier to get optimizers for the Discriminator and the Generator
+    D_solver = get_optimizer(D)
+    G_solver = get_optimizer(G)
+
+    # Run it!
+    images = run_a_gan(
+        D,
+        G,
+        D_solver,
+        G_solver,
+        ls_discriminator_loss,
+        ls_generator_loss,
+        loader_train,
+        num_epochs=20
+    )
+
+    for i in range(len(images)):
+        show_images(images[i], i)
+
+def go_lsgan():
+    # Make the discriminator
+    D = discriminator().type(dtype)
+
+    # Make the generator
+    G = generator().type(dtype)
+
+    # Use the function you wrote earlier to get optimizers for the Discriminator and the Generator
+    D_solver = get_optimizer(D)
+    G_solver = get_optimizer(G)
+
+    # Run it!
+
+    images = run_a_gan(
+        D,
+        G,
+        D_solver,
+        G_solver,
+        ls_discriminator_loss,
+        ls_generator_loss,
+        loader_train,
+        num_epochs=20
+    )
+
+    for i in range(len(images)):
+        show_images(images[i], i)
+
+def go_dcgan():
+
+    D = build_dc_classifier().to(device)
+    D.apply(initialize_weights)
+
+    G = build_dc_generator().to(device)
+    G.apply(initialize_weights)
+
+    D_solver = get_optimizer(D)
+    G_solver = get_optimizer(G)
+
+    images = run_a_gan(D, G, D_solver, G_solver, discriminator_loss, generator_loss,
+              loader_train, num_epochs=20)
+
+    for i in range(len(images)):
+        show_images(images[i], i)
 
 
-D = build_dc_classifier().to(device)
-D.apply(initialize_weights)
-
-G = build_dc_generator().to(device)
-G.apply(initialize_weights)
-
-D_solver = get_optimizer(D)
-G_solver = get_optimizer(G)
-
-run_a_gan(D, G, D_solver, G_solver, discriminator_loss, generator_loss,
-          loader_train, num_epochs=20)
 
