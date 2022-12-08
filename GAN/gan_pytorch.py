@@ -14,7 +14,7 @@ import PIL
 NOISE_DIM = 96
 
 dtype = torch.cuda.FloatTensor if torch.cuda.is_available() else torch.FloatTensor
-
+device = "cuda0" if torch.cuda.is_available() else "cpu"
 def sample_noise(batch_size, dim, seed=None):
     """
     Generate a PyTorch Tensor of uniform random noise.
@@ -32,7 +32,7 @@ def sample_noise(batch_size, dim, seed=None):
     ########################################################################
     # generate noise                                                       #
     ########################################################################
-    return -2 * torch.rand((batch_size, dim), dtype=dtype) + 1
+    return -2 * torch.rand((batch_size, dim), device=device) + 1
 def discriminator(seed=None):
     """
     Build and return a PyTorch model implementing the architecture above.
@@ -114,8 +114,8 @@ def discriminator_loss(logits_real, logits_fake):
     - loss: PyTorch Tensor containing (scalar) the loss for the discriminator.
     """
     loss = None
-    real_loss = F.binary_cross_entropy_with_logits(logits_real, torch.ones_like(logits_real, dtype=dtype))
-    fake_loss = F.binary_cross_entropy_with_logits(logits_fake, torch.zeros_like(logits_fake, dtype=dtype))
+    real_loss = F.binary_cross_entropy_with_logits(logits_real, torch.ones_like(logits_real, device=device))
+    fake_loss = F.binary_cross_entropy_with_logits(logits_fake, torch.zeros_like(logits_fake, device=device))
     return real_loss + fake_loss
 
 def generator_loss(logits_fake):
@@ -128,7 +128,7 @@ def generator_loss(logits_fake):
     Returns:
     - loss: PyTorch Tensor containing the (scalar) loss for the generator.
     """
-    loss = F.binary_cross_entropy_with_logits(logits_fake, torch.ones_like(logits_fake, dtype=dtype))
+    loss = F.binary_cross_entropy_with_logits(logits_fake, torch.ones_like(logits_fake, device=device))
     return loss
 
 def get_optimizer(model):

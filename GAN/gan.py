@@ -19,14 +19,13 @@ from gan_pytorch import bce_loss, discriminator_loss, generator_loss
 from gan_pytorch import get_optimizer, run_a_gan
 from gan_pytorch import sample_noise
 
-
-plt.rcParams['figure.figsize'] = (10.0, 8.0) # Set default size of plots.
+plt.rcParams['figure.figsize'] = (10.0, 8.0)  # Set default size of plots.
 plt.rcParams['image.interpolation'] = 'nearest'
 plt.rcParams['image.cmap'] = 'gray'
 
 
-def show_images(images):
-    images = np.reshape(images, [images.shape[0], -1]) # Images reshape to (batch_size, D).
+def show_images(images, epoch_cnt=0):
+    images = np.reshape(images, [images.shape[0], -1])  # Images reshape to (batch_size, D).
     sqrtn = int(np.ceil(np.sqrt(images.shape[0])))
     sqrtimg = int(np.ceil(np.sqrt(images.shape[1])))
 
@@ -40,8 +39,10 @@ def show_images(images):
         ax.set_xticklabels([])
         ax.set_yticklabels([])
         ax.set_aspect('equal')
-        plt.imshow(img.reshape([sqrtimg,sqrtimg]))
+        plt.imshow(img.reshape([sqrtimg, sqrtimg]))
+    plt.savefig(f"./out/gen_iter_{(epoch_cnt + 1) * 250}.png")
     return
+
 
 answers = dict(np.load('gan-checks.npz'))
 dtype = torch.cuda.FloatTensor if torch.cuda.is_available() else torch.FloatTensor
@@ -76,7 +77,7 @@ loader_val = DataLoader(
     sampler=ChunkSampler(NUM_VAL, NUM_TRAIN)
 )
 
-imgs = loader_train.__iter__().next()[0].view(batch_size, 784).numpy().squeeze()
+imgs = loader_train.__iter__().__next__()[0].view(batch_size, 784).numpy().squeeze()
 
 
 def test_sample_noise():
@@ -92,12 +93,11 @@ def test_sample_noise():
     print('All tests passed!')
 
 
-
-
 def test_discriminator_loss(logits_real, logits_fake, d_loss_true):
     d_loss = discriminator_loss(torch.Tensor(logits_real).type(dtype),
                                 torch.Tensor(logits_fake).type(dtype)).cpu().numpy()
-    print("Maximum error in d_loss: %g"%rel_error(d_loss_true, d_loss))
+    print("Maximum error in d_loss: %g" % rel_error(d_loss_true, d_loss))
+
 
 test_discriminator_loss(
     answers['logits_real'],
@@ -105,15 +105,16 @@ test_discriminator_loss(
     answers['d_loss_true']
 )
 
+
 def test_generator_loss(logits_fake, g_loss_true):
     g_loss = generator_loss(torch.Tensor(logits_fake).type(dtype)).cpu().numpy()
-    print("Maximum error in g_loss: %g"%rel_error(g_loss_true, g_loss))
+    print("Maximum error in g_loss: %g" % rel_error(g_loss_true, g_loss))
+
 
 test_generator_loss(
     answers['logits_fake'],
     answers['g_loss_true']
 )
-
 
 # Make the discriminator
 D = discriminator().type(dtype)
@@ -133,5 +134,9 @@ images = run_a_gan(
     G_solver,
     discriminator_loss,
     generator_loss,
-    loader_train
+    loader_train,
+    num_epochs=20
 )
+
+for i in range(len(images)):
+    show_images(images[i], i)
