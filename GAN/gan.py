@@ -47,6 +47,7 @@ def show_images(images, epoch_cnt=0):
 
 answers = dict(np.load('gan-checks.npz'))
 dtype = torch.cuda.FloatTensor if torch.cuda.is_available() else torch.FloatTensor
+device = "cuda" if torch.cuda.is_available() else "cpu"
 
 NUM_TRAIN = 50000
 NUM_VAL = 5000
@@ -110,12 +111,11 @@ imgs = loader_train.__iter__().__next__()[0].view(batch_size, 784).numpy().squee
 # for i in range(len(images)):
 #     show_images(images[i], i)
 
-devices  = [torch.cuda.device(i) for i in range(torch.cuda.device_count())]
 
-D = build_dc_classifier().to("cuda")
+D = build_dc_classifier().to(device)
 D.apply(initialize_weights)
 
-G = build_dc_generator().to("cuda")
+G = build_dc_generator().to(device)
 G.apply(initialize_weights)
 
 D_solver = get_optimizer(D)
