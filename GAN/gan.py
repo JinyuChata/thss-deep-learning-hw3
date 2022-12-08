@@ -16,6 +16,7 @@ from gan_pytorch import Flatten, Unflatten, initialize_weights
 from gan_pytorch import discriminator
 from gan_pytorch import generator
 from gan_pytorch import bce_loss, discriminator_loss, generator_loss
+from gan_pytorch import ls_discriminator_loss, ls_generator_loss
 from gan_pytorch import get_optimizer, run_a_gan
 from gan_pytorch import sample_noise
 
@@ -127,13 +128,14 @@ D_solver = get_optimizer(D)
 G_solver = get_optimizer(G)
 
 # Run it!
+
 images = run_a_gan(
     D,
     G,
     D_solver,
     G_solver,
-    discriminator_loss,
-    generator_loss,
+    ls_discriminator_loss,
+    ls_generator_loss,
     loader_train,
     num_epochs=20
 )

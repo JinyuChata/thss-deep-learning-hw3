@@ -161,12 +161,13 @@ def ls_discriminator_loss(scores_real, scores_fake):
     Outputs:
     - loss: A PyTorch Tensor containing the loss.
     """
-    loss = None
-    ##############################################################################
-    # TODO:                                                                      #
-    #                                                                            #
-    ##############################################################################
-    return loss
+    real_loss = (scores_real - 1) ** 2
+    real_loss = 0.5 * real_loss.mean()
+
+    fake_loss = scores_fake ** 2
+    fake_loss = 0.5 * fake_loss.mean()
+
+    return real_loss + fake_loss
 
 def ls_generator_loss(scores_fake):
     """
@@ -178,13 +179,10 @@ def ls_generator_loss(scores_fake):
     Outputs:
     - loss: A PyTorch Tensor containing the loss.
     """
-    loss = None
-    # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
+    fake_loss = (scores_fake - 1) ** 2
+    fake_loss = 0.5 * fake_loss.mean()
 
-    pass
-
-    # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
-    return loss
+    return fake_loss
 
 def build_dc_classifier(batch_size):
     """
