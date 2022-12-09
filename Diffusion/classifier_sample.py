@@ -105,7 +105,7 @@ def main():
         shape_str = "x".join([str(x) for x in arr.shape])
         out_path = os.path.join(logger.get_dir(),
                                 f"no_cond_{shape_str}.npz" if args.class_cond is None else
-                                f"cond{args.class_cond}_{shape_str}.npz")
+                                f"cond{args.class_cond}_{shape_str}_{args.diffusion_steps}.npz")
         logger.log(f"saving to {out_path}")
         np.savez(out_path, arr, label_arr)
 
