@@ -1,26 +1,11 @@
 import os.path as osp
 import matplotlib
-
-matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import torch
 from sklearn.manifold import TSNE
 
 from torch_geometric.datasets import Planetoid
 from torch_geometric.nn import Node2Vec
-
-dataset = 'Cora'
-path = osp.join(osp.dirname(osp.realpath(__file__)), 'data', dataset)
-dataset = Planetoid(path, dataset)
-data = dataset[0]
-
-device = torch.device('cpu')
-model = Node2Vec(data.edge_index, embedding_dim=128, walk_length=20,
-                 context_size=10, walks_per_node=10,
-                 num_negative_samples=1, p=1, q=1, sparse=True).to(device)
-
-loader = model.loader(batch_size=128, shuffle=True, num_workers=4)
-optimizer = torch.optim.SparseAdam(list(model.parameters()), lr=0.01)
 
 
 def train():
@@ -45,12 +30,6 @@ def test():
     return acc
 
 
-for epoch in range(1, 101):
-    loss = train()
-    acc = test()
-    print(f'Epoch: {epoch:03d}, Loss: {loss:.4f}, Acc: {acc:.4f}')
-
-
 @torch.no_grad()
 def visualize(color_list):
     model.eval()
@@ -64,9 +43,30 @@ def visualize(color_list):
     plt.axis('off')
     plt.savefig('visualization.png')
 
+if __name__ == '__main__':
+    matplotlib.use('Agg')
+    dataset = 'Cora'
+    path = osp.join(osp.dirname(osp.realpath(__file__)), 'data', dataset)
+    dataset = Planetoid(path, dataset)
+    data = dataset[0]
 
-color_list = [
-    '#ffc0cb', '#bada55', '#008080', '#420420', '#7fe5f0', '#065535',
-    '#ffd700'
-]
-visualize(color_list)
+    device = torch.device('cpu')
+    model = Node2Vec(data.edge_index, embedding_dim=128, walk_length=20,
+                     context_size=10, walks_per_node=10,
+                     num_negative_samples=1, p=1, q=1, sparse=True).to(device)
+
+    loader = model.loader(batch_size=128, shuffle=True, num_workers=4)
+    optimizer = torch.optim.SparseAdam(list(model.parameters()), lr=0.01)
+
+    for epoch in range(1, 101):
+        loss = train()
+        acc = test()
+        print(f'Epoch: {epoch:03d}, Loss: {loss:.4f}, Acc: {acc:.4f}')
+
+
+
+    color_list = [
+        '#ffc0cb', '#bada55', '#008080', '#420420', '#7fe5f0', '#065535',
+        '#ffd700'
+    ]
+    visualize(color_list)
