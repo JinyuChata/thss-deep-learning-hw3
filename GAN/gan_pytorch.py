@@ -15,6 +15,7 @@ NOISE_DIM = 96
 
 dtype = torch.cuda.FloatTensor if torch.cuda.is_available() else torch.FloatTensor
 device = "cuda" if torch.cuda.is_available() else "cpu"
+
 def sample_noise(batch_size, dim, seed=None):
     """
     Generate a PyTorch Tensor of uniform random noise.
@@ -205,7 +206,6 @@ def build_dc_classifier(batch_size=1):
         nn.LeakyReLU(0.01),
         nn.Linear(64*4*4, 1)
     )
-
 
 def build_dc_generator(noise_dim=NOISE_DIM):
     """

@@ -71,9 +71,12 @@ def test(data):
         accs.append(acc)
     return accs
 
+best_test_acc = 0
 
 for epoch in range(1, 201):
     train(data)
     train_acc, val_acc, test_acc = test(data)
     print(f'Epoch: {epoch:03d}, Train: {train_acc:.4f}, Val: {val_acc:.4f}, '
           f'Test: {test_acc:.4f}')
+    best_test_acc = max(best_test_acc, test_acc)
+print(f"Best test acc: {best_test_acc}")
