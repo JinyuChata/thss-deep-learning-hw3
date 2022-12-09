@@ -152,5 +152,4 @@ def go_dcgan():
     for i in range(len(images)):
         show_images(images[i], i)
 
-
-
+go_dcgan()
